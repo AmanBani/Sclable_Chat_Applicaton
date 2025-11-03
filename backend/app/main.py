@@ -3,6 +3,12 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from . import database, models
 from .ws_manager import manager
 from app.routes import chat, auth, messages, user
+import logging
+
+logging.basicConfig(
+    level = logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 app = FastAPI()
 models.Base.metadata.create_all(bind=database.engine)

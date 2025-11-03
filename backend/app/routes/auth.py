@@ -37,12 +37,11 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login")
 def login(user: UserCreate, db: Session = Depends(get_db)):
-    """
-    Verify user and return JWT token.
-    """
     db_user = db.query(User).filter(User.username == user.username).first()
     if not db_user or not verify_password(user.password, db_user.password):
         raise HTTPException(status_code=401, detail="Invalid username or password")
 
     token = create_access_token(db_user.username)
     return {"access_token": token, "token_type": "bearer"}
+
+

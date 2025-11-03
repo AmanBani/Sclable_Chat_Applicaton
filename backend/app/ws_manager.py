@@ -95,6 +95,16 @@ class ConnectionManager:
                 self.subscribe_to_channel("chat_channel")
             )
             print("🚀 Redis background listener started.")
+            
+    async def cache_message(self, user1:str,user2:str, message_data: dict):
+        redis_client = await self.get_redis()
+        
+        sorted_users = sorted([user1, user2])
+        cache_key = f"chat:history:{sorted_users[0]: {sorted_users[1]}}"
+        msg_json = json.dumps(message_data)
+        await redis_client.rpush(cache_key, msg_json)
+        await redis_client.ltrim(cache_key, -100,-1)
+        
 
 
 # Singleton instance

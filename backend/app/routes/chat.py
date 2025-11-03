@@ -7,6 +7,8 @@ from ..schemas import MessageCreate, MessageResponse, MessageHistoryResponse
 from ..ws_manager import manager
 import json
 from .. import crud
+import logging
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -65,6 +67,15 @@ async def send_message(message: MessageCreate, db: Session = Depends(get_db)):
         db.add(new_msg)
         db.commit()
         db.refresh(new_msg)
+        
+        message_data = {
+            "sender": message.sender,
+            "receiver": message.receiver,
+            "content": message.content,
+            "status": "sent",
+            "timestamp": str(new_msg.timestamp)
+        }
+        await manager.cache_message(message.sender, message.receiver,message_data)
 
         # publish delivery receipt to Redis
         redis_client = await manager.get_redis()
@@ -86,18 +97,35 @@ async def send_message(message: MessageCreate, db: Session = Depends(get_db)):
     )
 
 
-# ✅ 2️⃣ Get full conversation (now includes status)
 @router.get("/messages/conversation/{user1}/{user2}")
-def get_conversation(user1: str, user2: str, db: Session = Depends(get_db)):
-    """Fetch all messages between two users, with status info."""
+async def get_conversation(user1: str, user2: str, db: Session = Depends(get_db)):
+    
+    redis_client = await manager.get_redis()
+    sorted_users = sorted([user1, user2])
+    cache_key = f"chat:history:{sorted_users[0]}:{sorted_users[1]}"
 
+    # Step 1️⃣: Try fetching from Redis cache
+    cached_msgs = await redis_client.lrange(cache_key, 0, -1)
+
+    if cached_msgs:
+        logger.info("✅ Redis cache hit — serving messages from Redis")
+        messages = []
+        for msg in cached_msgs:
+            try:
+                messages.append(json.loads(msg))
+            except json.JSONDecodeError:
+                print("⚠️ Skipping corrupt cache entry")
+        return {"conversation": messages}
+
+    # Step 2️⃣: Cache miss — fetch from PostgreSQL
+    logger.info("⚠️ Redis cache miss — fetching from PostgreSQL...")
     user1_obj = db.query(User).filter(User.username == user1).first()
     user2_obj = db.query(User).filter(User.username == user2).first()
 
     if not user1_obj or not user2_obj:
-        raise HTTPException(404, "One or both users not found")
+        raise HTTPException(status_code=404, detail="One or both users not found")
 
-    messages = (
+    db_messages = (
         db.query(Message)
         .filter(
             ((Message.sender_id == user1_obj.id) & (Message.receiver_id == user2_obj.id))
@@ -107,18 +135,31 @@ def get_conversation(user1: str, user2: str, db: Session = Depends(get_db)):
         .all()
     )
 
-    response = [
+    # Step 3️⃣: Format and cache in Redis
+    messages = [
         {
             "sender": msg.sender_user.username,
             "receiver": msg.receiver_user.username,
             "content": msg.content,
             "status": msg.status,
-            "timestamp": msg.timestamp.isoformat()
+            "timestamp": msg.timestamp.isoformat(),
         }
-        for msg in messages
+        for msg in db_messages
     ]
 
-    return {"conversation": response}
+    for msg in messages:
+        await redis_client.rpush(cache_key, json.dumps(msg))
+
+    # Keep only last 50 messages
+    await redis_client.ltrim(cache_key, -50, -1)
+    # Optional: Expire cache after 1 hour
+    await redis_client.expire(cache_key, 3600)
+
+    print("💾 Cached conversation in Redis for next time")
+
+    return {"conversation": messages}
+
+    
 
 
 # ✅ 3️⃣ Get all messages for a user
