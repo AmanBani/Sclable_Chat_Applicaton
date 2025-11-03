@@ -24,10 +24,10 @@ class SendToUser(BaseModel):
 
 @router.post("/messages/send")
 async def send_message(payload: SendToUser, db: Session = Depends(get_db)):
-    # 1) ensure both users exist (create if not)
+
     sender = crud.get_user_by_username(db, payload.sender_username)
     if not sender:
-        # create user
+        
         sender = models.User(username=payload.sender_username, password="default")
         db.add(sender)
         db.commit()
@@ -40,13 +40,13 @@ async def send_message(payload: SendToUser, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(receiver)
 
-    # 2) get or create conversation
+    
     conv = crud.get_or_create_conversation(db, sender.id, receiver.id)
 
-    # 3) create message in DB
+ 
     msg = crud.create_message(db, conv.id, sender.id, receiver.id, payload.content)
 
-    # 4) publish to Redis channel for receiver (per-user channel)
+  
     data = {
         "conversation_id": conv.id,
         "message_id": msg.id,
@@ -55,7 +55,7 @@ async def send_message(payload: SendToUser, db: Session = Depends(get_db)):
         "content": msg.content,
         "timestamp": str(msg.timestamp)
     }
-    # publish asynchronously so endpoint returns quickly
+
     asyncio.create_task(manager.publish_message(f"user_{receiver.id}", json.dumps(data)))
 
     return {"status": "sent", "data": data}
@@ -70,7 +70,7 @@ def history(username_a: str, username_b: str, db: Session = Depends(get_db), lim
 
     conv = crud.get_or_create_conversation(db, user_a.id, user_b.id)
     msgs = crud.get_conversation_messages(db, conv.id, limit=limit, offset=offset)
-    # convert messages to simple dicts
+
     out = []
     for m in msgs:
         out.append({

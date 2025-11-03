@@ -16,7 +16,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60
 oath2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 def create_access_token(username: str):
-    """Create a JWT access token for the given username."""
+    
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     payload = {"sub": username, "exp": expire}
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
@@ -24,7 +24,7 @@ def create_access_token(username: str):
 
 
 def decode_access_token(token: str):
-    """Decode and verify a JWT token."""
+    
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
