@@ -1,0 +1,5 @@
+# Ignore dependency folders
+frontend/node_modules/
+backend/__pycache__/
+.venv/
+.vscode/
