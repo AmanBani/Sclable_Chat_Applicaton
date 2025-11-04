@@ -20,7 +20,7 @@ app.include_router(user.router, prefix="/user", tags=["User"])
 
 @app.get("/")
 def home():
-    return {"message": "Welcome to the Real-Time Chat API 🚀"}
+    return {"message": "Welcome to the Real-Time Chat API "}
 
 @app.on_event("startup")
 async def startup_event():
