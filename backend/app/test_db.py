@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 
-DATABASE_URL = "postgresql://postgres:1234@localhost:5434/chat_app"
+DATABASE_URL = "postgresql://postgres:1234@localhost:5432/chat_app"
 
 engine = create_engine(DATABASE_URL)
 
