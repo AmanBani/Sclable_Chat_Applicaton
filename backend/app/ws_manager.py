@@ -3,10 +3,15 @@ import os
 import json
 import redis.asyncio as redis
 import asyncio
+from dotenv import load_dotenv
 from fastapi import WebSocket
 from sqlalchemy.orm import Session
 from .database import SessionLocal
 from . import crud
+
+# Ensure .env is loaded; override=True so .env wins over shell/Docker env (e.g. REDIS_HOST=redis)
+_backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+load_dotenv(os.path.join(_backend_dir, ".env"), override=True)
 
 
 class ConnectionManager:
@@ -19,9 +24,9 @@ class ConnectionManager:
     async def get_redis(self):
         """Return a Redis connection (reuse if already open)."""
         if not self.redis:
-            # ✅ Dynamically pick Redis host & port (works for both local and Docker)
-            redis_host = os.getenv("REDIS_HOST", "localhost")
-            redis_port = os.getenv("REDIS_PORT", "6379")
+            # Read after .env load; use localhost when running on host (not in Docker)
+            redis_host = os.getenv("REDIS_HOST") or "localhost"
+            redis_port = os.getenv("REDIS_PORT") or "6379"
             redis_url = f"redis://{redis_host}:{redis_port}"
 
             self.redis = await redis.from_url(redis_url, decode_responses=True)
