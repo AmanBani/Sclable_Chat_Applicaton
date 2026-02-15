@@ -99,26 +99,11 @@ async def send_message(message: MessageCreate, db: Session = Depends(get_db)):
 
 @router.get("/messages/conversation/{user1}/{user2}")
 async def get_conversation(user1: str, user2: str, db: Session = Depends(get_db)):
-    
-    redis_client = await manager.get_redis()
-    sorted_users = sorted([user1, user2])
-    cache_key = f"chat:history:{sorted_users[0]}:{sorted_users[1]}"
-
-    # Step 1️⃣: Try fetching from Redis cache
-    cached_msgs = await redis_client.lrange(cache_key, 0, -1)
-
-    if cached_msgs:
-        logger.info("✅ Redis cache hit — serving messages from Redis")
-        messages = []
-        for msg in cached_msgs:
-            try:
-                messages.append(json.loads(msg))
-            except json.JSONDecodeError:
-                print("⚠️ Skipping corrupt cache entry")
-        return {"conversation": messages}
-
-    # Step 2️⃣: Cache miss — fetch from PostgreSQL
-    logger.info("⚠️ Redis cache miss — fetching from PostgreSQL...")
+    """
+    Fetch full conversation from PostgreSQL. Always returns all messages.
+    Redis is used only as a cache for recent messages (real-time delivery);
+    conversation history is always served from the database.
+    """
     user1_obj = db.query(User).filter(User.username == user1).first()
     user2_obj = db.query(User).filter(User.username == user2).first()
 
@@ -135,7 +120,6 @@ async def get_conversation(user1: str, user2: str, db: Session = Depends(get_db)
         .all()
     )
 
-    # Step 3️⃣: Format and cache in Redis
     messages = [
         {
             "sender": msg.sender_user.username,
@@ -147,15 +131,14 @@ async def get_conversation(user1: str, user2: str, db: Session = Depends(get_db)
         for msg in db_messages
     ]
 
-    for msg in messages:
+    # Update Redis cache for real-time consistency (keeps last 100 for cache_message)
+    redis_client = await manager.get_redis()
+    sorted_users = sorted([user1, user2])
+    cache_key = f"chat:history:{sorted_users[0]}:{sorted_users[1]}"
+    await redis_client.delete(cache_key)
+    for msg in messages[-100:]:
         await redis_client.rpush(cache_key, json.dumps(msg))
-
-    # Keep only last 50 messages
-    await redis_client.ltrim(cache_key, -50, -1)
-    # Optional: Expire cache after 1 hour
     await redis_client.expire(cache_key, 3600)
-
-    print("💾 Cached conversation in Redis for next time")
 
     return {"conversation": messages}
 

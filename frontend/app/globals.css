@@ -4,6 +4,17 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --color-chat-sidebar: var(--chat-sidebar);
+  --color-chat-sidebar-header: var(--chat-sidebar-header);
+  --color-chat-accent: var(--chat-accent);
+  --color-chat-accent-hover: var(--chat-accent-hover);
+  --color-chat-muted: var(--chat-muted);
+  --color-chat-sent: var(--chat-sent);
+  --color-chat-received: var(--chat-received);
+  --color-chat-pane: var(--chat-pane);
+  --color-chat-pane-header: var(--chat-pane-header);
+  --color-chat-search-bg: var(--chat-search-bg);
+  --color-chat-input-bg: var(--chat-input-bg);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -110,6 +121,21 @@
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
+}
+
+/* Black background, white text palette */
+:root {
+  --chat-sidebar: oklch(0.08 0.01 270);
+  --chat-sidebar-header: oklch(0.05 0.01 270);
+  --chat-accent: oklch(0.55 0.15 270);
+  --chat-accent-hover: oklch(0.45 0.15 270);
+  --chat-muted: oklch(0.7 0.02 270);
+  --chat-sent: oklch(0.25 0.03 270);
+  --chat-received: oklch(0.18 0.02 270);
+  --chat-pane: oklch(0.06 0.01 270);
+  --chat-pane-header: oklch(0.08 0.01 270);
+  --chat-input-bg: oklch(0.12 0.01 270);
+  --chat-search-bg: oklch(0.12 0.01 270);
 }
 
 @layer base {

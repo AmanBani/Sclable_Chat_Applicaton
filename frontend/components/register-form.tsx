@@ -12,11 +12,11 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { login } from "@/lib/api";
+import { register } from "@/lib/api";
 import { useAuthStore } from "@/stores/authStore";
 import Link from "next/link";
 
-export function LoginForm({
+export function RegisterForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
@@ -32,11 +32,14 @@ export function LoginForm({
     setError("");
     setLoading(true);
     try {
-      const res = await login(username, password);
+      await register(username, password);
+      const res = await import("@/lib/api").then((m) =>
+        m.login(username, password)
+      );
       setAuth(username, res.access_token);
       router.push("/chat");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? err.message : "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -49,9 +52,9 @@ export function LoginForm({
           <form onSubmit={handleSubmit} className="p-6 md:p-8 border-b md:border-b-0 md:border-r border-white/20">
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center pb-4 border-b border-white/20 mb-6">
-                <h1 className="text-2xl font-bold text-white">Welcome back</h1>
+                <h1 className="text-2xl font-bold text-white">Create account</h1>
                 <p className="text-chat-muted">
-                  Sign in to your account to continue chatting
+                  Choose a username and password to get started
                 </p>
               </div>
               <Field>
@@ -62,7 +65,7 @@ export function LoginForm({
                   id="username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter your username"
+                  placeholder="Choose a username"
                   required
                   className="bg-white/5 border border-white/30 text-white placeholder:text-white/50 rounded-lg focus:border-white/60"
                 />
@@ -77,6 +80,7 @@ export function LoginForm({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  minLength={4}
                   className="bg-white/5 border border-white/30 text-white placeholder:text-white/50 rounded-lg focus:border-white/60"
                 />
               </Field>
@@ -89,20 +93,20 @@ export function LoginForm({
                   disabled={loading}
                   className="w-full bg-chat-accent hover:bg-chat-accent/90 text-white border border-white/30"
                 >
-                  {loading ? "Signing in..." : "Sign in"}
+                  {loading ? "Creating account..." : "Create account"}
                 </Button>
               </Field>
               <FieldDescription className="text-center text-chat-muted">
-                Don&apos;t have an account?{" "}
-                <Link href="/register" className="text-chat-accent hover:underline">
-                  Sign up
+                Already have an account?{" "}
+                <Link href="/login" className="text-chat-accent hover:underline">
+                  Sign in
                 </Link>
               </FieldDescription>
             </FieldGroup>
           </form>
           <div className="hidden md:block bg-chat-accent/20 p-8 flex items-center justify-center border-l border-white/20">
             <p className="text-white/80 text-center text-lg">
-              Real-time messaging with WebSockets
+              Join the conversation
             </p>
           </div>
         </CardContent>

@@ -1,5 +1,6 @@
 import asyncio
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 from . import database, models
 from .ws_manager import manager
 from app.routes import chat, auth, messages, user
@@ -11,6 +12,15 @@ logging.basicConfig(
 )
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 models.Base.metadata.create_all(bind=database.engine)
 
 app.include_router(auth.router, prefix="/auth", tags=["Auth"])
