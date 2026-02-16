@@ -16,8 +16,8 @@ export default function HomePage() {
   }, [username, token, router]);
 
   return (
-    <div className="min-h-svh bg-chat-sidebar flex flex-col items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm md:max-w-xl border border-white/20 rounded-2xl p-2">
+    <div className="min-h-svh flex flex-col items-center justify-center p-6 md:p-10 bg-black">
+      <div className="w-full max-w-sm md:max-w-xl">
         <LoginForm />
       </div>
     </div>

@@ -2,14 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Search,
-  Plus,
-  LogOut,
-  MessageCircle,
-  RefreshCw,
-} from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Search, LogOut, MessageCircle, RefreshCw } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { listUsers } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -23,12 +17,15 @@ export type Conversation = {
 };
 
 type Props = {
+  mode: "topbar" | "sidebar";
   username: string;
   token: string;
   conversations: Conversation[];
   selectedUser: string | null;
   onSelect: (user: string) => void;
   onRefresh: () => void;
+  search?: string;
+  onSearchChange?: (v: string) => void;
 };
 
 function getInitials(name: string) {
@@ -41,24 +38,22 @@ function getInitials(name: string) {
 }
 
 export function ConversationList({
+  mode,
   username,
   token,
   conversations,
   selectedUser,
   onSelect,
   onRefresh,
+  search = "",
+  onSearchChange = () => {},
 }: Props) {
-  const [search, setSearch] = useState("");
   const [showNewChat, setShowNewChat] = useState(false);
   const [newChatUser, setNewChatUser] = useState("");
   const [allUsers, setAllUsers] = useState<UserItem[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const router = useRouter();
   const { logout } = useAuthStore();
-
-  const filtered = conversations.filter((c) =>
-    c.otherUser.toLowerCase().includes(search.toLowerCase())
-  );
 
   const filteredUsers = allUsers.filter(
     (u) =>
@@ -87,152 +82,154 @@ export function ConversationList({
     setNewChatUser("");
   };
 
-  return (
-    <>
-      {/* Header - WhatsApp style */}
-      <div className="h-16 px-4 flex items-center justify-between bg-chat-sidebar-header shrink-0 border-b border-white/20">
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="w-10 h-10 rounded-full bg-chat-accent flex items-center justify-center text-white font-semibold text-sm">
-            {getInitials(username)}
-          </div>
-          <span className="text-white font-medium truncate max-w-[120px]">
-            {username}
-          </span>
+  if (mode === "topbar") {
+    return (
+      <>
+        <div className="shrink-0 flex items-center justify-center px-4 py-2 border border-white/25 rounded bg-black">
+          <span className="font-bold text-white">Chat</span>
         </div>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setShowNewChat(true)}
-            className="p-2 rounded-full text-white/80 hover:bg-white/10"
-            aria-label="New chat"
-          >
-            <MessageCircle className="w-5 h-5" />
-          </button>
-          <button
-            onClick={onRefresh}
-            className="p-2 rounded-full text-white/80 hover:bg-white/10"
-            aria-label="Refresh"
-          >
-            <RefreshCw className="w-5 h-5" />
-          </button>
-          <button
-            onClick={handleLogout}
-            className="p-2 rounded-full text-white/80 hover:bg-white/10"
-            aria-label="Logout"
-          >
-            <LogOut className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-
-      {/* Search bar */}
-      <div className="px-3 py-2 bg-chat-sidebar shrink-0 border-b border-white/10">
-        <div className="flex items-center gap-2 bg-chat-search-bg rounded-lg px-3 py-2 border border-white/20">
-          <Search className="w-4 h-4 text-chat-muted shrink-0" />
+        <div className="flex-1 min-w-0 flex items-center gap-2 px-3 py-2 border border-white/25 rounded bg-black">
+          <Search className="w-4 h-4 text-white shrink-0" aria-hidden />
           <input
             type="text"
-            placeholder="Search or start new chat"
+            placeholder="Search"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 bg-transparent text-sm text-white placeholder:text-chat-muted outline-none"
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="flex-1 min-w-0 bg-transparent text-white placeholder:text-white/60 outline-none"
           />
+        </div>
+        <div
+          className="shrink-0 w-10 h-10 rounded-full border border-white/25 flex items-center justify-center text-white font-bold text-sm bg-black"
+          title={username}
+        >
+          {getInitials(username)}
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div className="p-3 border-b border-white/25">
+        <p className="text-xs font-bold text-white uppercase tracking-wide mb-2">Menu</p>
+        <div className="flex flex-col gap-1">
+          <button
+            type="button"
+            onClick={() => setShowNewChat(true)}
+            className="flex items-center gap-2 w-full px-3 py-2 text-left text-white border border-white/25 rounded hover:bg-white/5 transition-colors"
+          >
+            <MessageCircle className="w-4 h-4" />
+            <span>New chat</span>
+          </button>
+          <button
+            type="button"
+            onClick={onRefresh}
+            className="flex items-center gap-2 w-full px-3 py-2 text-left text-white border border-white/25 rounded hover:bg-white/5 transition-colors"
+          >
+            <RefreshCw className="w-4 h-4" />
+            <span>Refresh</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center gap-2 w-full px-3 py-2 text-left text-white border border-white/25 rounded hover:bg-white/5 transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Log out</span>
+          </button>
         </div>
       </div>
 
-      {/* Conversation list */}
-      <div className="flex-1 overflow-y-auto">
-        <AnimatePresence mode="popLayout">
-          {filtered.map((conv, i) => (
-            <motion.div
-              key={conv.otherUser}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ delay: i * 0.02 }}
-              whileHover={{ backgroundColor: "rgba(255,255,255,0.05)" }}
-              className={cn(
-                "flex items-center gap-3 px-4 py-3 cursor-pointer border-b border-white/10",
-                selectedUser === conv.otherUser && "bg-white/10 border-l-2 border-l-white/50"
-              )}
-              onClick={() => onSelect(conv.otherUser)}
-            >
-              <div className="w-12 h-12 rounded-full bg-chat-accent/80 flex items-center justify-center text-white font-semibold text-sm shrink-0">
-                {getInitials(conv.otherUser)}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-white font-medium truncate">
-                  {conv.otherUser}
-                </p>
-                <p className="text-chat-muted text-sm truncate">
-                  {conv.lastMessage || "No messages yet"}
-                </p>
-              </div>
-              <span className="text-chat-muted text-xs shrink-0">
-                {conv.lastTime}
-              </span>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+      <div className="flex-1 overflow-y-auto min-h-0 p-2">
+        <p className="text-xs font-bold text-white uppercase tracking-wide mb-2 px-1">Conversations</p>
+        <div className="flex flex-col gap-1">
+          <AnimatePresence mode="popLayout">
+            {conversations.map((conv, i) => (
+              <motion.div
+                key={conv.otherUser}
+                initial={{ opacity: 0, x: -6 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -6 }}
+                transition={{ delay: i * 0.02 }}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 cursor-pointer border rounded transition-colors",
+                  selectedUser === conv.otherUser
+                    ? "border-white/40 bg-white/10"
+                    : "border-white/25 hover:bg-white/5"
+                )}
+                onClick={() => onSelect(conv.otherUser)}
+              >
+                <div className="w-9 h-9 rounded-full border border-white/25 flex items-center justify-center text-white font-bold text-xs shrink-0">
+                  {getInitials(conv.otherUser)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-white text-sm truncate">{conv.otherUser}</p>
+                  <p className="text-white/80 text-xs truncate">{conv.lastMessage || "No messages yet"}</p>
+                </div>
+                <span className="text-white/70 text-xs shrink-0">{conv.lastTime}</span>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
       </div>
 
-      {/* New chat modal - User list like WhatsApp */}
       <AnimatePresence>
         {showNewChat && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 border border-white/25"
             onClick={() => setShowNewChat(false)}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-chat-sidebar rounded-xl w-full max-w-md max-h-[80vh] flex flex-col border border-white/30 overflow-hidden"
+              className="w-full max-w-md max-h-[80vh] flex flex-col rounded border border-white/25 bg-black overflow-hidden"
             >
-              <div className="p-4 border-b border-white/20 shrink-0">
-                <h3 className="text-white font-semibold mb-3">New chat</h3>
-                <p className="text-chat-muted text-sm mb-3">
-                  Select a user to start a conversation
-                </p>
+              <div className="p-4 border-b border-white/25">
+                <h3 className="font-bold text-white mb-1">New chat</h3>
+                <p className="text-white/80 text-sm mb-3">Select a user to start a conversation</p>
                 <input
                   type="text"
                   placeholder="Search by username..."
                   value={newChatUser}
                   onChange={(e) => setNewChatUser(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/30 text-white placeholder:text-chat-muted outline-none focus:ring-2 focus:ring-chat-accent focus:border-white/50"
+                  className="w-full px-3 py-2 rounded border border-white/25 bg-black text-white placeholder:text-white/50 outline-none"
                 />
               </div>
               <div className="flex-1 overflow-y-auto">
                 {loadingUsers ? (
-                  <p className="p-4 text-chat-muted text-sm">Loading users...</p>
+                  <p className="p-4 text-white/80 text-sm">Loading users...</p>
                 ) : filteredUsers.length === 0 ? (
-                  <p className="p-4 text-chat-muted text-sm">
+                  <p className="p-4 text-white/80 text-sm">
                     {allUsers.length === 0
                       ? "No other users yet. Share the app link for others to register!"
                       : "No users match your search"}
                   </p>
                 ) : (
                   filteredUsers.map((u) => (
-                    <motion.div
+                    <button
                       key={u.id}
-                      whileHover={{ backgroundColor: "rgba(255,255,255,0.08)" }}
-                      className="flex items-center gap-3 px-4 py-3 cursor-pointer border-b border-white/10"
+                      type="button"
+                      className="flex items-center gap-3 w-full px-4 py-3 text-left border-b border-white/25 hover:bg-white/5 transition-colors"
                       onClick={() => handleSelectUser(u.username)}
                     >
-                      <div className="w-10 h-10 rounded-full bg-chat-accent/80 flex items-center justify-center text-white font-semibold text-sm shrink-0">
+                      <div className="w-9 h-9 rounded-full border border-white/25 flex items-center justify-center text-white font-bold text-xs shrink-0">
                         {getInitials(u.username)}
                       </div>
-                      <p className="text-white font-medium">{u.username}</p>
-                    </motion.div>
+                      <span className="font-bold text-white">{u.username}</span>
+                    </button>
                   ))
                 )}
               </div>
-              <div className="p-4 border-t border-white/20 shrink-0">
+              <div className="p-4 border-t border-white/25">
                 <button
+                  type="button"
                   onClick={() => setShowNewChat(false)}
-                  className="w-full py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 border border-white/20"
+                  className="w-full py-2 rounded border border-white/25 text-white font-medium hover:bg-white/10 transition-colors"
                 >
                   Cancel
                 </button>

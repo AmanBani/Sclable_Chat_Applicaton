@@ -1,0 +1,322 @@
+{
+  "$schema": "./design.schema.json",
+  "meta": {
+    "name": "Puppie.inc Messaging App Design System",
+    "version": "1.0.0",
+    "description": "High-level design guidelines for structure, spacing, fonts, colours, and UI components. Use this file to instruct AI or developers to replicate the app's look consistently."
+  },
+
+  "vision": {
+    "statement": "Create a digital space that feels friendly, efficient, and inviting. Embrace a 'soft modern' aesthetic: muted colours, gentle curves, subtle depth. Convey professionalism without rigidity; foster community and ease of use. Every component should feel cohesive, thoughtfully crafted, and contribute to an effortlessly engaging experience.",
+    "priorities": ["clarity", "consistency", "approachable visual language"]
+  },
+
+  "designPrinciples": {
+    "softModernity": "Contemporary feel with rounded edges and soft shadows. Avoid sharp angles and overly flat or highly skeuomorphic elements. Think 'neumorphism-lite'.",
+    "harmoniousPalette": "Limited, coherent colour scheme that promotes visual calm and focuses attention on content.",
+    "clearHierarchy": "Strong visual hierarchy guiding the user's eye naturally through the interface.",
+    "approachableAndFriendly": "Welcoming, easy to interact with; reflects Puppie.inc brand identity.",
+    "consistency": "Uniform styling for similar components (buttons, inputs, active states) across the app.",
+    "readabilityFirst": "Clear typography and sufficient contrast so all text is easily legible."
+  },
+
+  "colors": {
+    "primary": {
+      "lavender": "#A78BFA",
+      "usage": ["App header background", "primary actions", "certain icons"]
+    },
+    "backgrounds": {
+      "light": "#F5F5F5",
+      "dark": "#282828",
+      "midLight": "#E0E0E0",
+      "usage": {
+        "light": "Main chat area, light elements in sidebar",
+        "dark": "Sidebar background",
+        "midLight": "Chat bubbles (others), secondary containers"
+      }
+    },
+    "text": {
+      "dark": "#1A1A1A",
+      "light": "#FFFFFF",
+      "muted": "#888888",
+      "usage": {
+        "dark": "Primary text on light backgrounds",
+        "light": "Primary text on dark backgrounds, logo",
+        "muted": "Timestamps, secondary descriptions"
+      }
+    },
+    "actionAndStatus": {
+      "successGreen": "#8BC34A",
+      "warningYellow": "#FFC107",
+      "unreadBadge": "#7ED321",
+      "usage": {
+        "successGreen": "'You' chat bubbles, success checkmarks, active badges",
+        "warningYellow": "File type icons (e.g. .docx)",
+        "unreadBadge": "Unread count badges"
+      }
+    },
+    "borders": {
+      "subtle": "#D8D8D8",
+      "usage": "Light borders, dotted dividers"
+    }
+  },
+
+  "typography": {
+    "fontFamily": "Inter",
+    "fallbacks": ["Roboto", "Open Sans", "system-ui", "sans-serif"],
+    "weights": {
+      "regular": 400,
+      "medium": 500,
+      "bold": 600
+    },
+    "weightsUsage": {
+      "regular": "Body text, secondary descriptions, timestamps",
+      "medium": "Navigation items, input text",
+      "bold": "Channel names, main titles, brand name"
+    },
+    "sizes": {
+      "xs": "0.75rem",
+      "sm": "0.875rem",
+      "base": "1rem",
+      "md": "1.125rem",
+      "lg": "1.25rem"
+    },
+    "sizesUsage": {
+      "xs": "Timestamps, minor labels",
+      "sm": "Secondary descriptions, file sizes",
+      "base": "Body text, chat messages",
+      "md": "Navigation items, channel header",
+      "lg": "App brand name, prominent titles"
+    },
+    "lineHeight": 1.5,
+    "sectionTitlesTransform": "uppercase"
+  },
+
+  "spacing": {
+    "unit": "8px",
+    "rule": "All padding and margins should be multiples of the base unit.",
+    "padding": {
+      "sm": "8px",
+      "md": "12px",
+      "lg": "16px"
+    },
+    "margins": {
+      "messageVertical": "16px",
+      "layoutHorizontal": "Between sidebar and main content"
+    }
+  },
+
+  "layout": {
+    "grid": "Two-column layout",
+    "sidebar": {
+      "position": "Left",
+      "width": "240px–280px",
+      "fixed": true
+    },
+    "mainContent": {
+      "behavior": "Fluid width, adapts to available space"
+    }
+  },
+
+  "borderRadius": {
+    "sm": "6px",
+    "md": "10px",
+    "lg": "16px",
+    "pill": "9999px",
+    "usage": {
+      "sm": "Chat bubbles, smaller buttons",
+      "md": "Input fields, file attachments",
+      "lg": "Main panels, app header search bar",
+      "pill": "'Today' separator, avatars"
+    }
+  },
+
+  "shadows": {
+    "elevation1": "0px 1px 3px rgba(0, 0, 0, 0.1)",
+    "elevation2": "0px 4px 8px rgba(0, 0, 0, 0.1)",
+    "innerNeumorphic": "inset 1px 1px 3px rgba(0, 0, 0, 0.1), inset -1px -1px 3px rgba(255, 255, 255, 0.7)",
+    "usage": {
+      "elevation1": "Subtle lift for active items",
+      "elevation2": "Main content window, search bar",
+      "innerNeumorphic": "Search bar input field"
+    }
+  },
+
+  "components": {
+    "appFrame": {
+      "background": "Primary lavender",
+      "header": {
+        "background": "Primary lavender",
+        "borderRadius": "lg (bottom corners)",
+        "logo": {
+          "color": "text-light",
+          "fontSize": "lg",
+          "fontWeight": "bold",
+          "icon": "Playful, white"
+        },
+        "searchInput": {
+          "background": "background-light",
+          "borderRadius": "lg",
+          "shadow": "innerNeumorphic",
+          "textColor": "text-dark",
+          "placeholderColor": "text-muted",
+          "shortcutHint": "⌘K, small, light grey"
+        },
+        "userAvatar": "Small, circular, pill radius",
+        "windowControls": "OS-level icons, subtle border, rounded"
+      }
+    },
+
+    "sidebar": {
+      "background": "background-dark",
+      "sections": ["MENU", "STREAMS"],
+      "sectionTitles": {
+        "transform": "uppercase",
+        "fontSize": "xs",
+        "color": "text-muted"
+      },
+      "navItem": {
+        "textColor": "text-light",
+        "fontSize": "md",
+        "fontWeight": "medium",
+        "icons": "Simple, white, outlined",
+        "active": {
+          "background": "background-light",
+          "borderRadius": "sm",
+          "textColor": "text-dark",
+          "shadow": "elevation1"
+        }
+      },
+      "streamItem": {
+        "layout": "Avatar (small, circular), channel name, description",
+        "channelName": { "color": "text-light", "fontSize": "md", "fontWeight": "bold" },
+        "description": { "color": "text-muted", "fontSize": "sm" },
+        "unreadBadge": {
+          "background": "unread-badge",
+          "textColor": "white",
+          "fontWeight": "medium",
+          "shape": "Rounded rectangle"
+        },
+        "active": {
+          "background": "background-light",
+          "borderRadius": "sm",
+          "border": "1px solid border-subtle",
+          "textColor": "text-dark",
+          "shadow": "elevation1"
+        }
+      }
+    },
+
+    "mainChatArea": {
+      "background": "background-light",
+      "channelHeader": {
+        "background": "background-mid-light",
+        "borderRadius": "md",
+        "channelName": { "color": "text-dark", "fontSize": "md", "fontWeight": "bold" },
+        "participants": { "color": "text-muted", "fontSize": "sm" },
+        "icons": "Small, dark grey"
+      },
+      "messages": {
+        "bubble": {
+          "borderRadius": "sm",
+          "senderOther": { "background": "background-mid-light", "textColor": "text-dark" },
+          "senderYou": { "background": "success-green", "textColor": "text-light" }
+        },
+        "avatar": "Small, circular, pill",
+        "timestamp": { "color": "text-muted", "fontSize": "xs" }
+      },
+      "fileAttachment": {
+        "container": "Rounded, subtle light green (lighter than success-green or rgba)",
+        "fileBox": {
+          "borderRadius": "md",
+          "background": "white",
+          "border": "1px solid border-subtle"
+        },
+        "icons": "By type (e.g. lavender .zip, warningYellow .docx)",
+        "filename": "fontWeight medium",
+        "fileSize": "color text-muted",
+        "downloadIcon": "Small, dark grey",
+        "statusCheckmark": "success-green"
+      },
+      "dateSeparator": {
+        "shape": "Capsule, border-radius pill",
+        "background": "background-light",
+        "border": "1px solid border-subtle",
+        "textColor": "text-muted",
+        "dividerLines": "Dotted, border-subtle, horizontal"
+      }
+    },
+
+    "messageInputArea": {
+      "background": "background-mid-light or slightly darker background-light",
+      "container": "Rounded corners, subtle border",
+      "textEditor": {
+        "multiLine": true,
+        "placeholderColor": "text-muted",
+        "textColor": "text-dark"
+      },
+      "formattingBar": {
+        "background": "background-mid-light",
+        "shape": "Small rounded rectangle",
+        "icons": "B, I, U, etc., dark grey"
+      },
+      "actionIcons": "Microphone, camera, image, file, emoji, font size; dark grey, outlined",
+      "sendButton": {
+        "borderRadius": "sm",
+        "background": "background-light or slightly darker",
+        "text": "Send now",
+        "textColor": "text-dark",
+        "fontWeight": "medium",
+        "icon": "Paper plane"
+      }
+    }
+  },
+
+  "cssVariablesReference": {
+    "colors": {
+      "--color-primary-lavender": "#A78BFA",
+      "--color-background-light": "#F5F5F5",
+      "--color-background-dark": "#282828",
+      "--color-background-mid-light": "#E0E0E0",
+      "--color-text-dark": "#1A1A1A",
+      "--color-text-light": "#FFFFFF",
+      "--color-text-muted": "#888888",
+      "--color-success-green": "#8BC34A",
+      "--color-warning-yellow": "#FFC107",
+      "--color-unread-badge": "#7ED321",
+      "--color-border-subtle": "#D8D8D8"
+    },
+    "typography": {
+      "--font-weight-regular": "400",
+      "--font-weight-medium": "500",
+      "--font-weight-bold": "600",
+      "--font-size-xs": "0.75rem",
+      "--font-size-sm": "0.875rem",
+      "--font-size-base": "1rem",
+      "--font-size-md": "1.125rem",
+      "--font-size-lg": "1.25rem"
+    },
+    "spacing": {
+      "--spacing-unit": "8px",
+      "--padding-sm": "8px",
+      "--padding-md": "12px",
+      "--padding-lg": "16px",
+      "--margin-y-message": "16px"
+    },
+    "radius": {
+      "--border-radius-sm": "6px",
+      "--border-radius-md": "10px",
+      "--border-radius-lg": "16px",
+      "--border-radius-pill": "9999px"
+    },
+    "shadows": {
+      "--shadow-elevation-1": "0px 1px 3px rgba(0, 0, 0, 0.1)",
+      "--shadow-elevation-2": "0px 4px 8px rgba(0, 0, 0, 0.1)",
+      "--shadow-inner-neumorphic": "inset 1px 1px 3px rgba(0, 0, 0, 0.1), inset -1px -1px 3px rgba(255, 255, 255, 0.7)"
+    }
+  },
+
+  "aiInstructions": {
+    "summary": "When implementing UI from this design system: (1) Apply the design principles and vision first. (2) Use the cssVariablesReference for exact values in CSS or Tailwind. (3) Follow component definitions for structure and states (default, active). (4) Keep spacing as multiples of 8px. (5) Prefer Inter with the specified weights and sizes. (6) Use the documented shadows and border radii for the soft-modern look. (7) Maintain consistent active states (light background, dark text, elevation-1) across sidebar and streams."
+  }
+}

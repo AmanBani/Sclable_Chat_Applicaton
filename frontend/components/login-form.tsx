@@ -44,67 +44,56 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="overflow-hidden border border-white/30 shadow-xl bg-chat-sidebar rounded-xl">
-        <CardContent className="grid p-0 md:grid-cols-2">
-          <form onSubmit={handleSubmit} className="p-6 md:p-8 border-b md:border-b-0 md:border-r border-white/20">
-            <FieldGroup>
-              <div className="flex flex-col items-center gap-2 text-center pb-4 border-b border-white/20 mb-6">
-                <h1 className="text-2xl font-bold text-white">Welcome back</h1>
-                <p className="text-chat-muted">
-                  Sign in to your account to continue chatting
-                </p>
-              </div>
-              <Field>
-                <FieldLabel htmlFor="username" className="text-white/90">
-                  Username
-                </FieldLabel>
-                <Input
-                  id="username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter your username"
-                  required
-                  className="bg-white/5 border border-white/30 text-white placeholder:text-white/50 rounded-lg focus:border-white/60"
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="password" className="text-white/90">
-                  Password
-                </FieldLabel>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="bg-white/5 border border-white/30 text-white placeholder:text-white/50 rounded-lg focus:border-white/60"
-                />
-              </Field>
-              {error && (
-                <p className="text-sm text-red-400">{error}</p>
-              )}
-              <Field>
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-chat-accent hover:bg-chat-accent/90 text-white border border-white/30"
-                >
-                  {loading ? "Signing in..." : "Sign in"}
-                </Button>
-              </Field>
-              <FieldDescription className="text-center text-chat-muted">
-                Don&apos;t have an account?{" "}
-                <Link href="/register" className="text-chat-accent hover:underline">
-                  Sign up
-                </Link>
-              </FieldDescription>
-            </FieldGroup>
+      <Card className="overflow-hidden border border-white/25 rounded bg-black">
+        <CardContent className="p-6">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div className="text-center pb-4 border-b border-white/25 mb-2">
+              <h1 className="font-bold text-white text-xl">Welcome back</h1>
+              <p className="text-white/80 text-sm mt-1">Sign in to continue chatting</p>
+            </div>
+            <Field>
+              <FieldLabel htmlFor="username" className="font-bold text-white">
+                Username
+              </FieldLabel>
+              <Input
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Enter your username"
+                required
+                className="bg-black border border-white/25 text-white placeholder:text-white/50 rounded focus:border-white/50"
+              />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="password" className="font-bold text-white">
+                Password
+              </FieldLabel>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="bg-black border border-white/25 text-white placeholder:text-white/50 rounded focus:border-white/50"
+              />
+            </Field>
+            {error && <p className="text-red-400 text-sm">{error}</p>}
+            <Field>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded border border-white/25 text-white font-bold hover:bg-white/10 bg-black"
+              >
+                {loading ? "Signing in..." : "Sign in"}
+              </Button>
+            </Field>
+            <FieldDescription className="text-center text-white/80 text-sm">
+              Don&apos;t have an account?{" "}
+              <Link href="/register" className="text-white font-bold hover:underline">
+                Sign up
+              </Link>
+            </FieldDescription>
           </form>
-          <div className="hidden md:block bg-chat-accent/20 p-8 flex items-center justify-center border-l border-white/20">
-            <p className="text-white/80 text-center text-lg">
-              Real-time messaging with WebSockets
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>

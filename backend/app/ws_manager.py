@@ -29,7 +29,7 @@ class ConnectionManager:
             redis_url = f"redis://{redis_host}:{redis_port}"
 
             self.redis = await redis.from_url(redis_url, decode_responses=True)
-            print(f"🔌 Connected to Redis at {redis_url}")
+            print(f" Connected to Redis at {redis_url}")
         return self.redis
 
     
@@ -91,7 +91,7 @@ class ConnectionManager:
         pubsub = redis_client.pubsub()
         await pubsub.subscribe(channel)
 
-        print(f"📡 Subscribed to Redis channel: {channel}")
+        print(f" Subscribed to Redis channel: {channel}")
 
         async for msg in pubsub.listen():
             if msg and msg["type"] == "message":
@@ -105,7 +105,7 @@ class ConnectionManager:
             self.subscriber_task = asyncio.create_task(
                 self.subscribe_to_channel("chat_channel")
             )
-            print("🚀 Redis background listener started.")
+            print(" Redis background listener started.")
 
     # ✅ Cache recent messages in Redis
     async def cache_message(self, user1: str, user2: str, message_data: dict):
@@ -120,7 +120,7 @@ class ConnectionManager:
 
         # Keep only the last 100 messages
         await redis_client.ltrim(cache_key, -100, -1)
-        print(f"💾 Cached message to Redis key: {cache_key}")
+        print(f" Cached message to Redis key: {cache_key}")
 
 
 # Singleton instance

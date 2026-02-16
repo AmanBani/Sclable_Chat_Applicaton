@@ -1,14 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { motion } from "framer-motion";
 import { Phone, Video, MoreVertical, ArrowLeft } from "lucide-react";
 import { MessageBubble } from "./MessageBubble";
 import { ChatInput } from "./ChatInput";
 import { getConversation, sendMessage } from "@/lib/api";
 import type { Message } from "@/lib/api";
 import type { IncomingMessage } from "@/hooks/useWebSocket";
-import { cn } from "@/lib/utils";
 
 function getInitials(name: string) {
   return name
@@ -67,7 +65,6 @@ export function MessagePane({
   }, [currentUser, otherUser, token, setMessages]);
 
   useEffect(() => {
-    // Only add messages we RECEIVED via WebSocket. Our own sent messages are added from handleSend.
     const relevant = wsMessages.filter(
       (m) => m.sender === otherUser && m.receiver === currentUser
     );
@@ -117,38 +114,41 @@ export function MessagePane({
   };
 
   return (
-    <div className="flex flex-col h-full min-h-0">
-      {/* Chat header - WhatsApp style */}
-      <div className="h-16 px-4 flex items-center gap-3 bg-chat-pane-header border-b border-white/20 shrink-0">
+    <div className="flex flex-col h-full min-h-0 bg-black">
+      <div className="shrink-0 flex items-center gap-3 px-4 py-3 border-b border-white/25 bg-black">
         <button
-          className="md:hidden p-2 -ml-2 rounded-full hover:bg-white/10 text-white"
+          type="button"
+          className="md:hidden p-2 -ml-2 rounded border border-white/25 text-white hover:bg-white/10"
           aria-label="Back"
           onClick={onBack}
         >
-          <ArrowLeft className="w-5 h-5 text-white" />
+          <ArrowLeft className="w-5 h-5" />
         </button>
-        <div className="w-10 h-10 rounded-full bg-chat-accent flex items-center justify-center text-white font-semibold text-sm shrink-0">
+        <div className="w-9 h-9 rounded-full border border-white/25 flex items-center justify-center text-white font-bold text-xs shrink-0">
           {getInitials(otherUser)}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-white truncate">{otherUser}</p>
-          <p className="text-xs text-white/60">Click to view profile</p>
+          <p className="font-bold text-white truncate">{otherUser}</p>
+          <p className="text-white/80 text-xs">Click to view profile</p>
         </div>
         <div className="flex items-center gap-1">
           <button
-            className="p-2 rounded-full text-white/80 hover:bg-white/10"
+            type="button"
+            className="p-2 rounded border border-white/25 text-white hover:bg-white/10"
             aria-label="Voice call"
           >
             <Phone className="w-5 h-5" />
           </button>
           <button
-            className="p-2 rounded-full text-white/80 hover:bg-white/10"
+            type="button"
+            className="p-2 rounded border border-white/25 text-white hover:bg-white/10"
             aria-label="Video call"
           >
             <Video className="w-5 h-5" />
           </button>
           <button
-            className="p-2 rounded-full text-white/80 hover:bg-white/10"
+            type="button"
+            className="p-2 rounded border border-white/25 text-white hover:bg-white/10"
             aria-label="More"
           >
             <MoreVertical className="w-5 h-5" />
@@ -156,28 +156,28 @@ export function MessagePane({
         </div>
       </div>
 
-      {/* Messages */}
-      <div
-        className={cn(
-          "flex-1 overflow-y-auto p-4",
-          "bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.03%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')]",
-          "bg-chat-pane"
-        )}
-      >
-        <div className="flex flex-col gap-3 max-w-2xl mx-auto">
-          {messages.map((msg, i) => (
-            <MessageBubble
-              key={`${msg.sender}-${msg.receiver}-${msg.timestamp}-${i}`}
-              content={msg.content}
-              isSent={msg.sender === currentUser}
-              timestamp={msg.timestamp}
-            />
-          ))}
+      <div className="flex-1 overflow-y-auto p-4 bg-black">
+        <div className="flex flex-col gap-0.5 max-w-2xl mx-auto w-full">
+          {messages.map((msg, i) => {
+            const isSent = msg.sender === currentUser;
+            const prevSender = i > 0 ? messages[i - 1].sender : null;
+            const showSeparator = i > 0 && prevSender !== msg.sender;
+            return (
+              <MessageBubble
+                key={`${msg.sender}-${msg.receiver}-${msg.timestamp}-${i}`}
+                content={msg.content}
+                isSent={isSent}
+                timestamp={msg.timestamp}
+                senderName={isSent ? undefined : msg.sender}
+                currentUserName={currentUser}
+                showSeparator={showSeparator}
+              />
+            );
+          })}
         </div>
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
       <ChatInput onSend={handleSend} />
     </div>
   );
