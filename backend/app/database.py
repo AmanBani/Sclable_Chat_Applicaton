@@ -8,13 +8,13 @@ import os
 _backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(os.path.join(_backend_dir, ".env"), override=True)
 
-# ✅ Use DATABASE_URL if available (Render / local)
+
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
     SQLALCHEMY_DATABASE_URL = DATABASE_URL
 else:
-    # Fallback for local Docker
+  
     DB_USER = os.getenv("POSTGRES_USER", "postgres")
     DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "1234")
     DB_NAME = os.getenv("POSTGRES_DB", "chat_app")

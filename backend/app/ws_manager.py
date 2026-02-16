@@ -16,15 +16,14 @@ load_dotenv(os.path.join(_backend_dir, ".env"), override=True)
 
 class ConnectionManager:
     def __init__(self):
-        # Active websocket connections: {username: WebSocket}
+        
         self.active_connections: dict[str, WebSocket] = {}
         self.redis = None
-        self.subscriber_task = None  # background listener
-
+        self.subscriber_task = None 
     async def get_redis(self):
         """Return a Redis connection (reuse if already open)."""
         if not self.redis:
-            # Read after .env load; use localhost when running on host (not in Docker)
+            
             redis_host = os.getenv("REDIS_HOST") or "localhost"
             redis_port = os.getenv("REDIS_PORT") or "6379"
             redis_url = f"redis://{redis_host}:{redis_port}"
@@ -33,19 +32,19 @@ class ConnectionManager:
             print(f"🔌 Connected to Redis at {redis_url}")
         return self.redis
 
-    # ✅ Connect user WebSocket
+    
     async def connect(self, username: str, websocket: WebSocket):
         await websocket.accept()
         self.active_connections[username] = websocket
-        print(f"✅ {username} connected via WebSocket.")
+        print(f" {username} connected via WebSocket.")
 
-    # ✅ Disconnect user WebSocket
+   
     def disconnect(self, username: str):
         if username in self.active_connections:
             del self.active_connections[username]
-            print(f"❌ {username} disconnected.")
+            print(f" {username} disconnected.")
 
-    # ✅ Send a message directly to one user
+   
     async def send_personal_message(
         self, receiver_username: str, message_payload: str, message_id: int = None
     ):
@@ -53,7 +52,7 @@ class ConnectionManager:
             ws = self.active_connections[receiver_username]
             await ws.send_text(message_payload)
 
-            # Update message status → delivered
+            
             db = SessionLocal()
             try:
                 if message_id:
@@ -73,20 +72,20 @@ class ConnectionManager:
             return True
         return False  # not online
 
-    # ✅ Broadcast to all local websocket connections
+    
     async def broadcast(self, message: str):
         for username, connection in self.active_connections.items():
             try:
                 await connection.send_text(message)
             except Exception as e:
-                print(f"⚠️ Failed to send to {username}: {e}")
+                print(f" Failed to send to {username}: {e}")
 
-    # ✅ Publish a message to a Redis channel
+  
     async def publish_message(self, channel: str, message: str):
         redis_client = await self.get_redis()
         await redis_client.publish(channel, message)
 
-    # ✅ Subscribe to Redis channel and forward to WebSocket clients
+
     async def subscribe_to_channel(self, channel: str):
         redis_client = await self.get_redis()
         pubsub = redis_client.pubsub()
@@ -97,7 +96,7 @@ class ConnectionManager:
         async for msg in pubsub.listen():
             if msg and msg["type"] == "message":
                 data = msg["data"]
-                print(f"📩 Received from Redis: {data}")
+                print(f" Received from Redis: {data}")
                 await self.broadcast(data)
 
     # ✅ Start background Redis listener once

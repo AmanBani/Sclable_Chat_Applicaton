@@ -99,11 +99,7 @@ async def send_message(message: MessageCreate, db: Session = Depends(get_db)):
 
 @router.get("/messages/conversation/{user1}/{user2}")
 async def get_conversation(user1: str, user2: str, db: Session = Depends(get_db)):
-    """
-    Fetch full conversation from PostgreSQL. Always returns all messages.
-    Redis is used only as a cache for recent messages (real-time delivery);
-    conversation history is always served from the database.
-    """
+  
     user1_obj = db.query(User).filter(User.username == user1).first()
     user2_obj = db.query(User).filter(User.username == user2).first()
 
@@ -145,7 +141,7 @@ async def get_conversation(user1: str, user2: str, db: Session = Depends(get_db)
     
 
 
-# ✅ 3️⃣ Get all messages for a user
+
 @router.get("/messages/{user_id}", response_model=MessageHistoryResponse)
 def get_messages(user_id: str, db: Session = Depends(get_db)):
     """Fetch all messages sent or received by a specific user, including status."""
@@ -176,7 +172,7 @@ def get_messages(user_id: str, db: Session = Depends(get_db)):
     return {"messages": message_list}
 
 
-# ✅ 4️⃣ Mark a message as READ (when recipient views it)
+
 @router.post("/messages/{message_id}/mark_read")
 async def mark_message_read(message_id: int, db: Session = Depends(get_db)):
     """Mark message as read and notify sender via Redis."""
