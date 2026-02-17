@@ -20,6 +20,8 @@ export function useWebSocket(username: string | null, options?: UseWebSocketOpti
   const wsRef = useRef<WebSocket | null>(null);
   const onIncomingRef = useRef(options?.onIncomingMessage);
   onIncomingRef.current = options?.onIncomingMessage;
+  const reconnectAttemptsRef = useRef(0);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const parsePayload = useCallback((text: string): IncomingMessage | null => {
     const match = text.match(/^(.+?)\s*->\s*(.+?):\s*([\s\S]*)$/);
@@ -32,25 +34,68 @@ export function useWebSocket(username: string | null, options?: UseWebSocketOpti
   useEffect(() => {
     if (!username) return;
 
-    const url = `${WS_URL}/ws/user/${encodeURIComponent(username)}`;
-    const ws = new WebSocket(url);
-    wsRef.current = ws;
+    let isActive = true;
 
-    ws.onopen = () => setStatus("connected");
-    ws.onclose = () => setStatus("disconnected");
-    ws.onerror = () => setStatus("disconnected");
-
-    ws.onmessage = (event) => {
-      const parsed = parsePayload(event.data);
-      if (parsed) {
-        setMessages((prev) => [...prev, parsed]);
-        onIncomingRef.current?.(parsed);
+    const clearReconnectTimeout = () => {
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
       }
     };
 
+    const connect = () => {
+      if (!isActive) return;
+
+      setStatus("connecting");
+      const url = `${WS_URL}/ws/user/${encodeURIComponent(username)}`;
+      const ws = new WebSocket(url);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        reconnectAttemptsRef.current = 0;
+        setStatus("connected");
+      };
+
+      const scheduleReconnect = () => {
+        if (!isActive) return;
+        if (reconnectTimeoutRef.current) return; // already scheduled
+
+        reconnectAttemptsRef.current += 1;
+        const delay = Math.min(10000, 1000 * reconnectAttemptsRef.current);
+        reconnectTimeoutRef.current = setTimeout(() => {
+          reconnectTimeoutRef.current = null;
+          connect();
+        }, delay);
+      };
+
+      ws.onclose = () => {
+        setStatus("disconnected");
+        scheduleReconnect();
+      };
+
+      ws.onerror = () => {
+        setStatus("disconnected");
+        scheduleReconnect();
+      };
+
+      ws.onmessage = (event) => {
+        const parsed = parsePayload(event.data);
+        if (parsed) {
+          setMessages((prev) => [...prev, parsed]);
+          onIncomingRef.current?.(parsed);
+        }
+      };
+    };
+
+    connect();
+
     return () => {
-      ws.close();
-      wsRef.current = null;
+      isActive = false;
+      clearReconnectTimeout();
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
       setStatus("disconnected");
     };
   }, [username, parsePayload]);
