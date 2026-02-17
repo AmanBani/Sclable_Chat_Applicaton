@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { useWebSocket } from "@/hooks/useWebSocket";
@@ -28,10 +28,38 @@ function formatTime(ts: string): string {
 export default function ChatPage() {
   const { username, token } = useAuthStore();
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const selectedUserRef = useRef<string | null>(null);
+  selectedUserRef.current = selectedUser;
+
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [search, setSearch] = useState("");
-  const { messages: wsMessages, addIncoming, clearMessages } = useWebSocket(username);
+  /** Unread count per sender (messages received while not viewing that chat) */
+  const [unreadByUser, setUnreadByUser] = useState<Record<string, number>>({});
+
+  const onIncomingMessage = useCallback((msg: { sender: string; receiver: string }) => {
+    if (!username || msg.receiver !== username) return;
+    if (msg.sender === selectedUserRef.current) return; // viewing this chat, don't count
+    setUnreadByUser((prev) => ({
+      ...prev,
+      [msg.sender]: (prev[msg.sender] ?? 0) + 1,
+    }));
+  }, [username]);
+
+  const { messages: wsMessages, addIncoming, clearMessages } = useWebSocket(username, {
+    onIncomingMessage,
+  });
+
+  const handleSelectUser = useCallback((user: string) => {
+    setSelectedUser(user);
+    setUnreadByUser((prev) => {
+      const next = { ...prev };
+      delete next[user];
+      return next;
+    });
+  }, []);
+
+  const totalUnread = Object.values(unreadByUser).reduce((a, b) => a + b, 0);
 
   const loadConversations = async () => {
     if (!username || !token) return;
@@ -81,10 +109,12 @@ export default function ChatPage() {
           token={token || ""}
           conversations={conversations}
           selectedUser={selectedUser}
-          onSelect={setSelectedUser}
+          onSelect={handleSelectUser}
           onRefresh={loadConversations}
           search={search}
           onSearchChange={setSearch}
+          unreadByUser={unreadByUser}
+          totalUnread={totalUnread}
         />
       </header>
 
@@ -102,10 +132,12 @@ export default function ChatPage() {
             token={token || ""}
             conversations={filtered}
             selectedUser={selectedUser}
-            onSelect={setSelectedUser}
+            onSelect={handleSelectUser}
             onRefresh={loadConversations}
             search={search}
             onSearchChange={setSearch}
+            unreadByUser={unreadByUser}
+            totalUnread={totalUnread}
           />
         </aside>
 

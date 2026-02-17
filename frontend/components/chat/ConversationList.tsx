@@ -26,7 +26,24 @@ type Props = {
   onRefresh: () => void;
   search?: string;
   onSearchChange?: (v: string) => void;
+  /** Unread count per other user (for WhatsApp-style badges) */
+  unreadByUser?: Record<string, number>;
+  /** Total unread count (for header badge) */
+  totalUnread?: number;
 };
+
+function UnreadBadge({ count }: { count: number }) {
+  if (count <= 0) return null;
+  const display = count > 99 ? "99+" : String(count);
+  return (
+    <span
+      className="min-w-[20px] h-5 px-1.5 rounded-full bg-[#25D366] text-white text-xs font-bold flex items-center justify-center shrink-0"
+      aria-label={`${count} new messages`}
+    >
+      {display}
+    </span>
+  );
+}
 
 function getInitials(name: string) {
   return name
@@ -47,6 +64,8 @@ export function ConversationList({
   onRefresh,
   search = "",
   onSearchChange = () => {},
+  unreadByUser = {},
+  totalUnread = 0,
 }: Props) {
   const [showNewChat, setShowNewChat] = useState(false);
   const [newChatUser, setNewChatUser] = useState("");
@@ -85,8 +104,9 @@ export function ConversationList({
   if (mode === "topbar") {
     return (
       <>
-        <div className="shrink-0 flex items-center justify-center px-4 py-2 border border-white/25 rounded bg-black">
+        <div className="shrink-0 flex items-center gap-2 px-4 py-2 border border-white/25 rounded bg-black">
           <span className="font-bold text-white">Chat</span>
+          <UnreadBadge count={totalUnread} />
         </div>
         <div className="flex-1 min-w-0 flex items-center gap-2 px-3 py-2 border border-white/25 rounded bg-black">
           <Search className="w-4 h-4 text-white shrink-0" aria-hidden />
@@ -166,7 +186,10 @@ export function ConversationList({
                   <p className="font-bold text-white text-sm truncate">{conv.otherUser}</p>
                   <p className="text-white/80 text-xs truncate">{conv.lastMessage || "No messages yet"}</p>
                 </div>
-                <span className="text-white/70 text-xs shrink-0">{conv.lastTime}</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <UnreadBadge count={unreadByUser[conv.otherUser] ?? 0} />
+                  <span className="text-white/70 text-xs">{conv.lastTime}</span>
+                </div>
               </motion.div>
             ))}
           </AnimatePresence>
