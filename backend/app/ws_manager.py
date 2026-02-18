@@ -23,13 +23,19 @@ class ConnectionManager:
     async def get_redis(self):
         """Return a Redis connection (reuse if already open)."""
         if not self.redis:
-            
-            redis_host = os.getenv("REDIS_HOST") or "localhost"
-            redis_port = os.getenv("REDIS_PORT") or "6379"
-            redis_url = f"redis://{redis_host}:{redis_port}"
+            # REDIS_URL supports Upstash (rediss://) and full connection strings
+            redis_url = os.getenv("REDIS_URL")
+            if redis_url:
+                pass  # use redis_url as-is
+            else:
+                redis_host = os.getenv("REDIS_HOST") or "localhost"
+                redis_port = os.getenv("REDIS_PORT") or "6379"
+                redis_url = f"redis://{redis_host}:{redis_port}"
 
             self.redis = await redis.from_url(redis_url, decode_responses=True)
-            print(f" Connected to Redis at {redis_url}")
+            # Mask password in logs
+            safe_url = redis_url.split("@")[-1] if "@" in redis_url else redis_url
+            print(f" Connected to Redis at {safe_url}")
         return self.redis
 
     
